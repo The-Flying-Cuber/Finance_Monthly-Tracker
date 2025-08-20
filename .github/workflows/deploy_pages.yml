@@ -2,52 +2,45 @@ name: Deploy Flutter Web to GitHub Pages
 
 on:
   push:
-    branches: [ main ]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
 
-      - name: Setup Flutter (stable)
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
-          channel: "stable"
+          flutter-version: '3.35.1'
+          channel: 'stable'
 
-      - name: Enable web & get deps
-        run: |
-          flutter config --enable-web
-          flutter --version
-          flutter pub get
+      - name: Install dependencies
+        run: flutter pub get
 
-      - name: Build web (project pages need /REPO_NAME/ base href)
-        run: |
-          flutter build web --release --base-href "/Finance_Monthly-Tracker/"
+      - name: Build Flutter web
+        run: flutter build web --release
 
-      - name: Upload build as artifact for Pages
-        uses: actions/upload-pages-artifact@v3
+      - name: Upload build artifacts
+        uses: actions/upload-pages-artifact@v2
         with:
           path: build/web
 
   deploy:
     needs: build
-    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
+    runs-on: ubuntu-latest
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
