@@ -21,24 +21,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Flutter
+      - name: Setup Flutter (stable)
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "stable"
           channel: "stable"
 
-      - name: Enable web + get deps
+      - name: Enable web & get deps
         run: |
           flutter config --enable-web
+          flutter --version
           flutter pub get
 
-      - name: Build web (project pages need /<repo>/ base href)
-        env:
-          REPO_NAME: ${{ github.event.repository.name }}
+      - name: Build web (project pages need /REPO_NAME/ base href)
         run: |
-          flutter build web --release --base-href "/${REPO_NAME}/"
+          flutter build web --release --base-href "/Finance_Monthly-Tracker/"
 
-      - name: Upload artifact
+      - name: Upload build as artifact for Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: build/web
